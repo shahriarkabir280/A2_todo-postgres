@@ -75,31 +75,29 @@ app.post("/tasks", async (req, res) => {
 
 app.put("/tasks/:id", async (req, res) => {
   const id = parseInt(req.params.id);
-  const task = tasks.find(t => t.id === id);
-  if(!task){
+  const existing = await pool.query("SELECT * FROM tasks WHERE id = $1", [id]);
+  if (existing.rows.length === 0) {
     return res.status(404).json({
       error: `Task ${id} not found`
     })
   }
-  const title = req.body.title;
-  const done =req.body.done;
-  if(title != undefined){
-    task.title = title;
-  }
-  if(done != undefined){
-    task.done = done;
-  }
-  res.json(task);
+  const current = existing.rows[0];
+  const title = req.body.title !== undefined ? req.body.title : current.title;
+  const done = req.body.done !== undefined ? req.body.done : current.done;
+  const result = await pool.query(
+    "UPDATE tasks SET title = $1, done = $2 WHERE id = $3 RETURNING *",
+    [title, done, id]
+  );
+  res.json(result.rows[0]);
 })
 
-app.delete("/tasks/:id", (req, res) =>{
+app.delete("/tasks/:id", async (req, res) => {
   const id = parseInt(req.params.id);
-  const taskIndex = tasks.findIndex(t => t.id === id);
-  if(taskIndex === -1){
+  const result = await pool.query("DELETE FROM tasks WHERE id = $1 RETURNING *", [id]);
+  if (result.rows.length === 0) {
     return res.status(404).json({
       error: `Task ${id} not found`
     })
   }
-  tasks.splice(taskIndex, 1);
   res.status(204).send();
 })

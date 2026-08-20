@@ -56,24 +56,24 @@ app.get("/tasks/:id", async (req, res) => {
   } 
 });
 
-
-app.post("/tasks",(req, res) =>{
+app.post("/tasks", async (req, res) => {
   const title = req.body.title;
-  if(!title){
-    return res.status(400).json({
-      error: "Title is required."
-    })
+  if (!title) {
+    return res.status(400).json({ error: "Title is required." });
   }
-  const newTask = {
-    id: tasks.length > 0 ? Math.max(...tasks.map(t => t.id)) +1 : 1,
-    title: title,
-    done: false
+  try {
+    const result = await pool.query(
+      "INSERT INTO tasks (title, done) VALUES ($1, $2) RETURNING *",
+      [title, false]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to create task." });
   }
-  tasks.push(newTask);
-  res.status(201).json(newTask);
-})
+});
 
-app.put("/tasks/:id", (req, res) =>{
+
+app.put("/tasks/:id", async (req, res) => {
   const id = parseInt(req.params.id);
   const task = tasks.find(t => t.id === id);
   if(!task){

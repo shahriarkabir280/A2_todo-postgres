@@ -28,7 +28,10 @@ app.get("/health", (req, res) =>{
 
 
 app.get("/tasks", (req, res ) =>{
-    res.json(tasks);
+
+    pool.query("SELECT * FROM tasks").then(result => {
+    res.json(result.rows);
+    });
 })
 
 app.get("/tasks/filter", (req, res) => {
@@ -38,22 +41,21 @@ app.get("/tasks/filter", (req, res) => {
         error: "Query parameter 'done' is required."
       })
     }
-    const filtered = tasks.filter(t => t.done ===(wantDone === "true"));
-    res.json(filtered);
+    pool.query("SELECT * FROM tasks WHERE done = $1", [wantDone === "true"]).then(result => {
+      res.json(result.rows);
+    });
 })
 
-app.get("/tasks/:id", (req, res) =>{
+app.get("/tasks/:id", async (req, res) => {
   const id = parseInt(req.params.id);
-  const task = tasks.find(t => t.id === id);
-  if(task){
-    res.json(task);
-  }
-  else{
-    res.status(404).json({
-      error: `Task ${id} not found`
-    })
-  }
-})
+  const result = await pool.query("SELECT * FROM tasks WHERE id = $1", [id]);
+  if (result.rows.length > 0) {
+    res.json(result.rows[0]);
+  } else {
+    res.status(404).json({ error: `Task ${id} not found` });
+  } 
+});
+
 
 app.post("/tasks",(req, res) =>{
   const title = req.body.title;

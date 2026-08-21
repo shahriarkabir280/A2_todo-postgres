@@ -1,6 +1,8 @@
 # A2_todo-postgres
 A to-do list CRUD API built with Node.js, Express, and PostgreSQL — create, read, update, and delete tasks with persistent storage, parameterized queries, and interactive Swagger UI docs.
 
+Built as **Assignment A2 — Connecting your CRUD to the database** for the [FlyRank Internship](https://internship.flyrank.ai/), Backend Track, Week 3. This is the direct sequel to [Assignment A1 — Build your first CRUD API](https://github.com/shahriarkabir280/A1_Simple-To-do-List-CRUD-API): same endpoints, same request/response shapes, now backed by a real database instead of an in-memory list.
+
 ## Why Postgres
 
 The assignment's default suggestion was SQLite, but this project uses PostgreSQL instead — same idea (SQL, persistence, parameterized queries), just a client/server database rather than a single file. The tradeoff: Postgres needs a running server and an existing database to connect to (see setup below), in exchange for the same engine used in most real production backends.
